@@ -8,6 +8,7 @@ package Vista;
 import Modelo.Conexion;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -56,7 +57,6 @@ public class frmProducto extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         jLabel5 = new javax.swing.JLabel();
         txtFiltrar = new javax.swing.JTextField();
-        cbFiltrar = new javax.swing.JComboBox<>();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -114,7 +114,7 @@ public class frmProducto extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(tablaProductos);
 
-        jLabel5.setText("Filtrar por:");
+        jLabel5.setText("Filtrar:");
 
         txtFiltrar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -129,8 +129,6 @@ public class frmProducto extends javax.swing.JFrame {
                 txtFiltrarKeyReleased(evt);
             }
         });
-
-        cbFiltrar.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Codigo", "Nombre" }));
 
         jMenu1.setText("File");
 
@@ -170,8 +168,6 @@ public class frmProducto extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbFiltrar, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtFiltrar, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
@@ -238,8 +234,7 @@ public class frmProducto extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
-                    .addComponent(txtFiltrar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cbFiltrar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtFiltrar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(23, 23, 23))
@@ -248,48 +243,76 @@ public class frmProducto extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    public void filtrarDatos(String valor){
-               
+    public void filtrarDatos(String valor) {
+
         String[] titulos = {"ID", "Codigo", "Nombre", "Precio", "Cantidad"};
         String[] registros = new String[5];
-        
-        DefaultTableModel modelo = new DefaultTableModel(null,titulos);
-        
-        int seleccionado = cbFiltrar.getSelectedIndex();
-        String nombre = "Nombre";
-        String codigo = "Codigo";
+
+        DefaultTableModel modelo = new DefaultTableModel(null, titulos);
+
         String SQL = null;
-        
-        if (cbFiltrar.getItemAt(seleccionado) == nombre) {
-            
-            SQL = "select * from producto where nombre like '%"+valor+"%'";
-        }
-        
-        if (cbFiltrar.getItemAt(seleccionado) == codigo) {
-            
-            SQL = "select * from producto where codigo like '%"+valor+"%'";
-        }
-        
+        String SQL2 = null;
+        String SQL3 = null;
+
         try {
-            
+
+            SQL = "select * from producto where codigo like '%" + valor + "%'";
+            SQL2 = "select * from producto where nombre like '%" + valor + "%'";
+            SQL3 = "select * from producto where precio like '%" + valor + "%'";
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(SQL);
-            
-            while (rs.next()){
-                
-                registros[0]=rs.getString("id");
-                registros[1]=rs.getString("codigo");
-                registros[2]=rs.getString("nombre");
-                registros[3]=rs.getString("precio");
-                registros[4]=rs.getString("cantidad");
-                
+
+            while (rs.next()) {
+
+                registros[0] = rs.getString("id");
+                registros[1] = rs.getString("codigo");
+                registros[2] = rs.getString("nombre");
+                registros[3] = rs.getString("precio");
+                registros[4] = rs.getString("cantidad");
+
                 modelo.addRow(registros);
             }
-            
+
+            if (!rs.next()) {
+                rs = null;
+                st = con.createStatement();
+                rs = st.executeQuery(SQL2);
+
+                while (rs.next()) {
+
+                    registros[0] = rs.getString("id");
+                    registros[1] = rs.getString("codigo");
+                    registros[2] = rs.getString("nombre");
+                    registros[3] = rs.getString("precio");
+                    registros[4] = rs.getString("cantidad");
+
+                    modelo.addRow(registros);
+                }
+
+            }
+
+            if (!rs.next()) {
+                rs = null;
+                st = con.createStatement();
+                rs = st.executeQuery(SQL3);
+
+                while (rs.next()) {
+
+                    registros[0] = rs.getString("id");
+                    registros[1] = rs.getString("codigo");
+                    registros[2] = rs.getString("nombre");
+                    registros[3] = rs.getString("precio");
+                    registros[4] = rs.getString("cantidad");
+
+                    modelo.addRow(registros);
+                }
+
+            }
+
             tablaProductos.setModel(modelo);
-        } catch (Exception e) {
-            
-            JOptionPane.showMessageDialog(null, "Error al mostrar datos "+ e.getMessage());
+        } catch (SQLException e) {
+
+            JOptionPane.showMessageDialog(null, "Error al mostrar datos " + e.getMessage());
         }
     }
     
@@ -372,7 +395,6 @@ public class frmProducto extends javax.swing.JFrame {
     public javax.swing.JButton btnGuardar;
     public javax.swing.JButton btnLimpiar;
     public javax.swing.JButton btnModificar;
-    private javax.swing.JComboBox<String> cbFiltrar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
